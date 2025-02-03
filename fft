@@ -1,0 +1,13 @@
+def fourier_trans(data_signal, sampling_rate): #fft를 통해 한 축의 가속도 그래프에서 freq와 amp를 반환
+    amp=np.fft.fft(data_signal)
+    freq=np.fft.fftfreq(len(data_signal), d=1/sampling_rate)
+    
+    low_frq_limit = 10
+    #인간의 한계
+    
+    v_freq = (freq >= 0) & (freq <= low_frq_limit)
+    a_amp = np.abs(amp)
+    vaild_amp = a_amp[v_freq]
+    valid_freq = freq[v_freq]
+    
+    return valid_freq, vaild_amp
