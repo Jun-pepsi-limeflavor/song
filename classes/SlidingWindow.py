@@ -2,12 +2,13 @@ import numpy as np
 import math
 
 class slidingwindow:
-    def __init__(self, total_array, Y_lable): # 행동에 대한 라벨링 값 저장하는 리스트 )
+    def __init__(self, total_array, Y_label, **kwargs): # 행동에 대한 라벨링 값 저장하는 리스트 )
         """
         생성자. total_array를 받아서 초기화.
         """
-        self.Y_lable= Y_lable # 행동에 대한 라벨링 값 저장하는 np Array  
+        self.Y_label= Y_label # 행동에 대한 라벨링 값 저장하는 np Array  
         self.total_array = total_array  # 3차원 배열 (예: [data_set, rows, cols])
+        self.low_frq_limit=kwargs.get('low_frq_limit', 10)
     
     def fourier_trans_max_amp(self, data_signal, sampling_rate): 
         """
@@ -16,16 +17,14 @@ class slidingwindow:
         amp = np.fft.fft(data_signal)
         freq = np.fft.fftfreq(len(data_signal), d=1/sampling_rate)
     
-        low_frq_limit = 10  # 인간의 한계
-    
-        v_freq = (freq >= 0) & (freq <= low_frq_limit)
+        v_freq = (freq >= 0) & (freq <= self.low_frq_limit)
         a_amp = np.abs(amp)
 
         valid_amp = a_amp[v_freq]
         valid_freq = freq[v_freq]
         
-        print("valid_amp")
-        print(valid_amp)
+        #print("valid_amp")
+        #print(valid_amp)
         
         # 최대값을 가지는 인덱스를 찾아서 반환
         max_index=1
@@ -46,12 +45,14 @@ class slidingwindow:
         num_columns = data.shape[0]  # 행 개수 가져오기
         window_size = int(T * 100)  # 한 번에 자를 크기 (정수로 변환)
         step_size = int(n * 100)  # 슬라이딩 간격 (정수로 변환)
+        win_date=[]
+
 
         # 실행 횟수 계산
         max_steps = math.ceil((num_columns - window_size) / step_size + 1) 
 
         # 슬라이딩 윈도우 실행 Raw Data Cut이 각각 슬라이싱 된 데이터 셋 현재 코드는 출력하는 것으로만 되어 있으나 Data Exctract시 함수 형식에 맞게 잘 수정해서 사용해야함. 
-        # 라벨링은 class 내에 있는 변수 Y_lable 로 지정해두었음. 
+        # 라벨링은 class 내에 있는 변수 Y_label 로 지정해두었음. 
                 
         for step in range(max_steps):
             
@@ -64,13 +65,13 @@ class slidingwindow:
                 break
             else:
                 Raw_data_cut = data[start_roW:end_roW,:]  # 특정 열 범위 선택
-                print(f"Step {step+1}: Raw_data_cut shape = {Raw_data_cut.shape}")
-                print(Raw_data_cut)
+                #print(f"Step {step+1}: Raw_data_cut shape = {Raw_data_cut.shape}")
+                win_date.append(Raw_data_cut)
 
             # 마지막 데이터 부족할 경우 처리
         if num_columns - (max_steps * step_size) < window_size:
                 window_size=int(window_size)
                 Raw_data_cut = data[num_columns-window_size-1:num_columns-1, :]  # 마지막 window_size만큼 가져오기
-                print(f"Final Step: Raw_data_cut shape = {Raw_data_cut.shape}")
-                print(Raw_data_cut)
-    
+                #print(f"Final Step: Raw_data_cut shape = {Raw_data_cut.shape}")
+                win_date.append(Raw_data_cut)
+        return win_date
