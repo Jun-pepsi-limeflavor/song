@@ -27,8 +27,8 @@ class rawpreprocessing:
             self.Y_label = np.array(labels)
 
             # 데이터셋 크기를 행동 개수 * data_set_per_label 으로 설정  
-            self.data_set = num_actions * self.data_set_per_label
-            print(f"총 {self.data_set}개의 데이터를 처리합니다.")
+            self.num_data_set = num_actions * self.data_set_per_label
+            print(f"총 {self.num_data_set}개의 데이터를 처리합니다.")
 
         except ValueError:
             print("올바른 숫자를 입력해주세요.")

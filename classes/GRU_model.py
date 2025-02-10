@@ -1,12 +1,13 @@
+from RawPreProcessing import rawpreprocessing
+import Data_Extract
+from SlidingWindow import slidingwindow
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, TensorDataset
-from RawPreProcessing import rawpreprocessing
-import Data_Extract
-from SlidingWindow import slidingwindow
 
 
 '''
@@ -24,9 +25,9 @@ num_epoch = 학습 횟수 (유동)
 
 #앞의 10번 연타하는거는 알아서 하시고~우
 #input으로 label받는 것도 구현하고고
-data_set=np.load('full_data.npy')
-Y_label=["Waving"]
-num=10 #data_set의 개수
+data_set=np.load('C:/Users/전재형/Motion_ML/full_data.npy')
+num=len(data_set)
+Y_label=['handshaking', 'punching', 'waving', 'walking']
 
 
 X=[]
@@ -40,7 +41,7 @@ for j in range(0, num):  # row data 갯수 만큼 돌림
         #print(f"Max Frequency for dataset {j}: {max_freq}")
 
         # SlidingWindow 클래스 인스턴스 생성 및 슬라이딩 윈도우 처리
-        win_datas=sliding_window_processor.sliding_window(1/max_freq,1,j)
+        win_datas=sliding_window_processor.sliding_window(1/max_freq,1/max_freq*0.5,j)
         #print(Data_Extract.data_extraction(win_datas[3]).extract_feature())
         for i in range(0, len(win_datas)):
                 
@@ -57,7 +58,7 @@ y_tensor = torch.tensor(y_encoded, dtype=torch.long)
 
 # Dataset & DataLoader 설정
 # dateset을 n개로 나눠서 최적화 진행
-batch_size = 4
+batch_size = 16
 dataset = TensorDataset(X_tensor, y_tensor)
 data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False) # 시계열 데이터니깐 shuffle을 하면 안되지만 sliding window를 사용했기때문에 여기선 True
 
@@ -79,7 +80,7 @@ class GRUMotionClassifier(nn.Module):
             
         return out
     
-model = GRUMotionClassifier(input_size=40, hidden_size=64, num_layers=2, output_size=1)
+model = GRUMotionClassifier(input_size=40, hidden_size=64, num_layers=2, output_size=len(Y_label))
 # input_size는 현재 x, y, z, a에서 뽑은 feature 40개
 # hidden_size는 이전 데이터를 얼마나 기억할 것인지, 높으면 정확성이 올라가지만 너무 올라가면 과적합
 # num_layers는 GRU 층
@@ -97,7 +98,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate) # 처음에는 큰 
 
 
 # ========== 4. 학습 실행 ==========
-num_epochs = 20
+num_epochs = 50
 
 for epoch in range(num_epochs):
     for batch_X, batch_y in data_loader:
@@ -116,11 +117,32 @@ for epoch in range(num_epochs):
 
 
 
+test=np.load('C:/Users/전재형/Motion_ML/test_data.npy')
+tests=[]
+y_test=[]
+
+sliding_window_test = slidingwindow(test, Y_label)
+for j in range(0, len(test)):  # row data 갯수 만큼 돌림
+        part_data = test[j]
+
+        # Fourier 변환을 통해 최대 주파수 구하기
+        max_freq = sliding_window_test.fourier_trans_max_amp(part_data[:, 3], 100)  # absolute 값
+        #print(f"Max Frequency for dataset {j}: {max_freq}")
+
+        # SlidingWindow 클래스 인스턴스 생성 및 슬라이딩 윈도우 처리
+        win_datas=sliding_window_test.sliding_window(1/max_freq,1/max_freq*0.5,j)
+        #print(Data_Extract.data_extraction(win_datas[3]).extract_feature())
+        for i in range(0, len(win_datas)):
+                
+                tests.append(Data_Extract.data_extraction(win_datas[i]).extract_feature())
+                y_test.append(Y_label[int(j/10)])
+test_sample = torch.tensor(tests, dtype=torch.float32)
 
 # ========== 5. 테스트 ==========
 # test_sample = torch.randn(1, seq_length, input_dim)  # 임의의 테스트 데이터
 model.eval()
 with torch.no_grad():
     prediction = model(test_sample)
-    predicted_class = torch.argmax(prediction, dim=1).item()
-    print(f"Predicted Motion: {predicted_class}") # predicted 출력
+    predicted_class = torch.argmax(prediction, dim=1)
+for i, pred in enumerate(predicted_class):
+    print(f"Test Sample {i+1}: Predicted Motion = {pred.item()}")

@@ -9,14 +9,15 @@ from SlidingWindow import slidingwindow
 
 #앞의 10번 연타하는거는 알아서 하시고~우
 #input으로 label받는 것도 구현하고고
-data_set=np.load('full_data.npy')
-Y_label=["Waving"]
-num=10 #data_set의 개수
+data_set=np.load('C:/Users/전재형/Motion_ML/full_data.npy')
+num=len(data_set)
+Y_label = ['handshaking', 'punching', 'waving', 'walking']
 
 X=[]
 y=[]
 
 sliding_window_processor = slidingwindow(data_set, Y_label)
+
 for j in range(0, num):  # row data 갯수 만큼 돌림
         part_data = data_set[j]
 
@@ -25,8 +26,8 @@ for j in range(0, num):  # row data 갯수 만큼 돌림
         #print(f"Max Frequency for dataset {j}: {max_freq}")
 
         # SlidingWindow 클래스 인스턴스 생성 및 슬라이딩 윈도우 처리
-        win_datas=sliding_window_processor.sliding_window(1/max_freq,1,j)
-        
+        win_datas=sliding_window_processor.sliding_window(1/max_freq,1/max_freq*0.5,j)
+        #print((win_datas))
         for i in range(0, len(win_datas)):
                 
                 X.append(Data_Extract.data_extraction(win_datas[i]).extract_feature())

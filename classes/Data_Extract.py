@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +5,7 @@ class data_extraction:
     def __init__(self, data_set, **kwargs):
         self.data_set=data_set
         self.sampling_rate=kwargs.get('sampling_rate', 100)
-        self.amp_limit=kwargs.get('amp_limit', 200)
+        self.amp_limit=kwargs.get('amp_limit', 0.1)
         self.low_frq_limit=kwargs.get('low_frq_limit', 10)
         self.valid_freq=[]
         self.valid_amp=[]
