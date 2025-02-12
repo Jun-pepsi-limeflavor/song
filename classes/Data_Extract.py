@@ -10,6 +10,23 @@ class data_extraction:
         self.valid_freq=[]
         self.valid_amp=[]
     
+    def extract_core_feature(self):
+        self.fourier_trans(self.data_set[:,3])
+
+        max_freq=None
+        max_index=1
+        for i in range (1,len(self.valid_amp)):
+            if(self.valid_amp[max_index]<self.valid_amp[i]):
+                max_index=i
+        max_freq = self.valid_freq[max_index]
+        Tmid=int(1/max_freq * 50)
+
+        mid=len(self.data_set)//2
+        self.data_set=self.data_set[mid-Tmid:mid+Tmid]
+
+        return self.extract_feature()
+
+
     def extract_feature(self):
         traditional_feature=self.stat_dt()
         fft_feature=[]
