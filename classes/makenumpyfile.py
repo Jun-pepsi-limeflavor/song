@@ -3,11 +3,11 @@ from Data_Extract import data_extraction
 from SlidingWindow import slidingwindow
 import numpy as np
 # 클래스 인스턴스 생성
-processor = rawpreprocessing(data_set_per_label=5, time_window=3) # label당 10개 , 창의 크기 3
+processor = rawpreprocessing(data_set_per_label=10, time_window=3) # label당 10개 , 창의 크기 3
 num_data_set=processor.num_data_set
 # 데이터 처리 및 시각화 반복
 for i in range(1, num_data_set + 1):
-    file_path = f"C:/Users/전재형/OneDrive/바탕 화면/raw_data/test_data/Raw Data{i}.csv"
+    file_path = f"C:/Users/user/OneDrive/바탕 화면/test/rawdataset/RawData{i}.csv"
     
     # CSV 파일에서 양 끝 10% 데이터 제거
     result_df = processor.remove_edges_from_csv(file_path)
@@ -22,4 +22,4 @@ for i in range(1, num_data_set + 1):
 # 최종 3차원 배열 생성
 total_array=processor.make_total_array()
 y_label=processor.Y_label
-np.save('test_data.npy', total_array)
+np.save('train_data.npy', total_array)
